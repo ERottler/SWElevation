@@ -12,6 +12,7 @@ library(shinydashboard)
 library(plotly)
 library(leaflet)
 library(rgdal)
+library(grDevices)
 
 navbarPage("Snowmelt", id="nav", theme = shinytheme("slate"), selected = "Summary & Overview", position = "fixed-top",
            
@@ -30,11 +31,24 @@ navbarPage("Snowmelt", id="nav", theme = shinytheme("slate"), selected = "Summar
                     HTML("<br>"), 
                     
                     p(style="text-align: justify; font-size: 40px; width: 99%;",
-                      "Analysis of past, present and future flood formation in the Rhine River basin"),
+                      "Analysis of elevation-dependent compensation effects in snowmelt"),
                     
                     HTML("<br>"), 
                     
-                    h2("Summary")
+                    h2("Summary"),
+                    
+                    HTML("<br><br>"),
+                    
+                    selectInput("var_plotly_ele_met", "",
+                                choices = c("Tmax - mean",
+                                            "Tmin - mean",
+                                            "Tmax - trend",
+                                            "Tmin - trend")),
+                    
+                    # verbatimTextOutput("click"),
+                    
+                    plotlyOutput("plotly_ele_met", width="100%")
+                    
            ),
            
            tabPanel("Interactive map",
@@ -61,9 +75,7 @@ navbarPage("Snowmelt", id="nav", theme = shinytheme("slate"), selected = "Summar
                                       draggable = T, top = 80, left = "auto", right = 20, bottom = "auto",
                                       width = 650, height = "auto", style = "opacity: 0.99",
                                       
-                                      h3("Hydro Explorer"),
-                                      
-                                      plotOutput("hydro_plot", width = "100%")
+                                      h3("Hydro Explorer")
                                       
                         )
                     )
