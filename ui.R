@@ -1,6 +1,6 @@
 ###
 
-#Shiny dashboard to investigate elevation-dependent compensation effects in snowmelt
+#Shiny dashboard to investigate CAMELS-US
 #Server
 #Erwin Rottler, University of Potsdam
 
@@ -13,12 +13,15 @@ library(plotly)
 library(leaflet)
 library(rgdal)
 library(grDevices)
+library(shinyWidgets)
 
-navbarPage("Snowmelt", id="nav", theme = shinytheme("slate"), selected = "Summary & Overview", position = "fixed-top",
+navbarPage("Watershed Investigator", id="nav", theme = shinytheme("slate"), selected = "Interactive Map", position = "fixed-top",
            
            tags$style(type="text/css", "body {padding-top: 70px;}"),
            
            tabPanel("Summary & Overview",
+                    
+                    setBackgroundColor("grey22"),
                     
                     HTML("<br>"),
                     
@@ -37,7 +40,9 @@ navbarPage("Snowmelt", id="nav", theme = shinytheme("slate"), selected = "Summar
                     
                     h2("Summary"),
                     
-                    HTML("<br><br>"),
+                    plotlyOutput("plotly_ele_are", width="100%"),
+                    
+                    HTML("<br><br><br><br><br>"),
                     
                     selectInput("var_plotly_ele_met", "",
                                 choices = c("Tmax - mean",
@@ -45,13 +50,15 @@ navbarPage("Snowmelt", id="nav", theme = shinytheme("slate"), selected = "Summar
                                             "Tmax - trend",
                                             "Tmin - trend")),
                     
-                    # verbatimTextOutput("click"),
+                    plotlyOutput("plotly_ele_met", width="100%"),
                     
-                    plotlyOutput("plotly_ele_met", width="100%")
+                    HTML("<br><br>")
+                    
+                    
                     
            ),
            
-           tabPanel("Interactive map",
+           tabPanel("Interactive Map",
                     div(class="outer",
                         
                         tags$head(
@@ -67,7 +74,7 @@ navbarPage("Snowmelt", id="nav", theme = shinytheme("slate"), selected = "Summar
                         
                         tags$head(tags$style(
                           HTML('
-                               #controls {background-color: rgba(255, 255, 255, 1)}'
+                               #controls {background-color: rgba(56, 56, 56, 1)}'
                           ))),
                         
                         # Shiny versions prior to 0.11 should use class = "modal" instead.
@@ -75,7 +82,14 @@ navbarPage("Snowmelt", id="nav", theme = shinytheme("slate"), selected = "Summar
                                       draggable = T, top = 80, left = "auto", right = 20, bottom = "auto",
                                       width = 650, height = "auto", style = "opacity: 0.99",
                                       
-                                      h3("Hydro Explorer")
+                                      h3("Watershed Investigator"),
+                                      
+                                      selectInput("plot_type", "Plot type", c(
+                                        "Elevation distribution" = "elevdist"
+                                      )),
+                                      plotOutput("elev_plot", width = "100%"),
+                                      
+                                      downloadButton(outputId = "down", label = "Save Plot", height = "1.0cm")
                                       
                         )
                     )
