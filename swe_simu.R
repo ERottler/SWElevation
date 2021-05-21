@@ -11,7 +11,11 @@ pacman::p_load(ncdf4, ncdf4.helpers, PCICt, dplyr, readr, tidyr, rgeos, ggplot2,
                shape, devtools, pbapply, profvis, RColorBrewer, viridis, Rcpp, rEchseSnow,
                Rlibeemd, xts, emdbook, rfs, meltimr, readr, tmap, sf, hydroGOF)
 
-daymet_dir <- "D:/nrc_user/rottler/daymet/clear_water/"
+#select GRDC station
+id_sel <- "4116301" # Orofino, Clearwater River
+# id_sel <- "4116300" # Spalding, Clearwater River
+
+daymet_dir <- paste0("D:/nrc_user/rottler/daymet/", id_sel, "/") #Spalding, Clearwater River
 
 #load prepared Daymet meteo data (see daymet_get.R)
 load(paste0(daymet_dir, "processed/daymet_meteo_prep.RData"))
@@ -130,6 +134,16 @@ for(b in 1:length(block_stas)){
   
 }  
 
-#save snow simulation results
+#save_data----
+
 save(swe_all, file = paste0(daymet_dir, "processed/swe_all.RData"))
+
+#clean_up----
+
+stopCluster(my_clust)
+
+rm(list = ls())
+
+.rs.restartR()
+
 
