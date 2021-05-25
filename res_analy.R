@@ -5,21 +5,11 @@
 
 ###
 
-pacman::p_load(parallel, doParallel, meltimr, viridis, zoo, scales)
-
-#select GRDC station
-id_sel <- "4116301" # Orofino, Clearwater River
-# id_sel <- "4116300" # Spalding, Clearwater River
-
-daymet_dir <- paste0("D:/nrc_user/rottler/daymet/", id_sel, "/") #Spalding, Clearwater River
-
 load(paste0(daymet_dir, "processed/daymet_meteo_prep.RData")) #daymet meteo data for watershed (see daymet_get.R)
 load(paste0(daymet_dir, "processed/swe_all.RData")) #simulated snow (see swe_simu.R)
 load(paste0(daymet_dir, "processed/elevs_sel.RData")) #elevations from dem (see daymet_get.R)
 
 #Cluster for parallel computing
-# stopCluster(my_clust)
-n_cores <- 10 #number of cores used for parallel computing
 my_clust <- parallel::makeCluster(n_cores)#Make cluster for parallel computing
 clusterEvalQ(my_clust, pacman::p_load(zoo, zyp, rEchseSnow, meltimr))
 registerDoParallel(my_clust)
@@ -274,11 +264,3 @@ save(smea_ann, sslo_ann,
      tmea_ann, tslo_ann,
      pmea_ann, pslo_ann,
      file = paste0(daymet_dir, "processed/res_analy.RData"))
-
-#clean_up----
-
-stopCluster(my_clust)
-
-rm(list = ls())
-
-.rs.restartR()

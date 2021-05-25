@@ -5,18 +5,6 @@
 
 ###
 
-pacman::p_load(ncdf4, ncdf4.helpers, PCICt, dplyr, readr, tidyr, rgeos, ggplot2, 
-               sp, viridis, rgdal, leaflet, ggmap, zoo, zyp, alptempr, lmomco, 
-               raster, foreach, rfs, dismo, XML, parallel, doParallel, Lmoments,
-               shape, devtools, pbapply, profvis, RColorBrewer, viridis, Rcpp, rEchseSnow,
-               Rlibeemd, xts, emdbook, rfs, meltimr, readr, tmap, sf, hydroGOF)
-
-#select GRDC station
-id_sel <- "4116301" # Orofino, Clearwater River
-# id_sel <- "4116300" # Spalding, Clearwater River
-
-daymet_dir <- paste0("D:/nrc_user/rottler/daymet/", id_sel, "/") #Spalding, Clearwater River
-
 #load prepared Daymet meteo data (see daymet_get.R)
 load(paste0(daymet_dir, "processed/daymet_meteo_prep.RData"))
 
@@ -24,11 +12,6 @@ load(paste0(daymet_dir, "processed/daymet_meteo_prep.RData"))
 snow_params <- read.table("U:/SWElelevation/R/SWElevation/snow_param.txt", header = T, sep = ";")
 
 #Cluster for parallel computing
-
-# stopCluster(my_clust)
-n_cores <- 8 #number of cores used for parallel computing
-
-#Make cluster for parallel computing
 my_clust <- makeCluster(n_cores)
 clusterEvalQ(my_clust, pacman::p_load(zoo, zyp, rEchseSnow, meltimr))
 registerDoParallel(my_clust)
@@ -138,12 +121,5 @@ for(b in 1:length(block_stas)){
 
 save(swe_all, file = paste0(daymet_dir, "processed/swe_all.RData"))
 
-#clean_up----
-
-stopCluster(my_clust)
-
-rm(list = ls())
-
-.rs.restartR()
 
 
