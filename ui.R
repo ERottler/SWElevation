@@ -14,6 +14,10 @@ library(leaflet)
 library(rgdal)
 library(grDevices)
 library(shinyWidgets)
+library(viridis)
+library(meltimr)
+library(scales)
+
 
 navbarPage("Watershed Investigator", id="nav", theme = shinytheme("slate"), selected = "Interactive Map", position = "fixed-top",
            
@@ -40,7 +44,7 @@ navbarPage("Watershed Investigator", id="nav", theme = shinytheme("slate"), sele
                     
                     h2("Summary"),
                     
-                    plotlyOutput("plotly_ele_are", width="100%"),
+                    # plotlyOutput("plotly_ele_are", width="100%"),
                     
                     HTML("<br><br><br><br><br>"),
                     
@@ -50,7 +54,7 @@ navbarPage("Watershed Investigator", id="nav", theme = shinytheme("slate"), sele
                                             "Tmax - trend",
                                             "Tmin - trend")),
                     
-                    plotlyOutput("plotly_ele_met", width="100%"),
+                    # plotlyOutput("plotly_ele_met", width="100%"),
                     
                     HTML("<br><br>")
                     
@@ -74,7 +78,7 @@ navbarPage("Watershed Investigator", id="nav", theme = shinytheme("slate"), sele
                         
                         tags$head(tags$style(
                           HTML('
-                               #controls {background-color: rgba(56, 56, 56, 1)}'
+                               #controls {background-color: rgba(45, 45, 45, 1)}'
                           ))),
                         
                         # Shiny versions prior to 0.11 should use class = "modal" instead.
@@ -84,8 +88,20 @@ navbarPage("Watershed Investigator", id="nav", theme = shinytheme("slate"), sele
                                       
                                       h3("Watershed Investigator"),
                                       
-                                      selectInput("plot_type", "Plot type", c(
-                                        "Elevation distribution" = "elevdist"
+                                      selectInput("plot_type", "Select plot type", c(
+                                        "Elevation distribution" = "elevdist",
+                                        "SWE - height - average" = "smea_ann",
+                                        "SWE - height - trend" = "sslo_ann",
+                                        "SWE - sum - average" = "vmea_ann",
+                                        "SWE - sum - trend" = "vslo_ann",
+                                        "SWE - daily change - average" = "vdif_ann",
+                                        "SWE - daily change - trend" = "vdis_ann",
+                                        "Temperature - average" = "tmea_ann",
+                                        "Temperature - trend" = "tslo_ann",
+                                        "Precipitation - average" = "pmea_ann",
+                                        "Precipitation - trend" = "pslo_ann",
+                                        "Discharge obs. - Raster graph" = "dis_obs_raster"
+                                        
                                       )),
                                       plotOutput("elev_plot", width = "100%"),
                                       
