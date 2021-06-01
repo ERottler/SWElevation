@@ -5,22 +5,7 @@
 
 ###
 
-#GRDC watersheds boundaries
-#total data set downloaded in five chunks
-grdc_catch_1 <- rgdal::readOGR(paste0(grdc_catc_dir, "/stationbasins_1.geojson"))
-grdc_catch_2 <- rgdal::readOGR(paste0(grdc_catc_dir, "/stationbasins_2.geojson"))
-grdc_catch_3 <- rgdal::readOGR(paste0(grdc_catc_dir, "/stationbasins_3.geojson"))
-grdc_catch_4 <- rgdal::readOGR(paste0(grdc_catc_dir, "/stationbasins_4.geojson"))
-grdc_catch_5 <- rgdal::readOGR(paste0(grdc_catc_dir, "/stationbasins_5.geojson"))
-
-grdc_catch <- rbind(grdc_catch_1, grdc_catch_2, grdc_catch_3, grdc_catch_4, grdc_catch_5)
-
-basin_sel <- grdc_catch[which(grdc_catch@data$grdc_no == id_sel), ] 
-
 #pre_meteo----
-
-crswgs84 <- sp::CRS("+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs")
-raster::crs(basin_sel) <- crswgs84
 
 #list paths to nc-files
 tmin_nc_paths <- list.files(paste0(daymet_dir, "raw/tmin/"), full.names = T)
@@ -60,17 +45,23 @@ for(i in 1:length(tmin_nc_paths)){
   
   grid_points_sel <- grid_points_cube_84[which(inside_sel == T)]
   
-  #Select cells for Basel/Cochem watershed
-  lat_in_sel <- grid_points_sel@coords[, 2]
+  #avoid duplicates in latitudes; add random noise at the and
+  rand_noise <- runif(length(lat), min = 0.0000001, max=0.00001)
+  lat_noise <- lat + rand_noise
   
+  #latitudes of cells within watershed
+  lat_in_all_noise <- grid_points_cube_84@coords[, 2] + rand_noise
+  
+  lat_in_sel <- lat_in_all_noise[which(inside_sel == T)]
+    
   get_cube_index_col <- function(val_in, coor_in = lon2D, col_or_row = "col"){
     
     if(col_or_row == "col"){
-      index_out <- which(round(coor_in, digits =6) == round(val_in, digits =6), arr.ind = T)[1,1]
+      index_out <- which(round(coor_in, digits = 9) == round(val_in, digits = 9), arr.ind = T)[1,1]
     }
     
     if(col_or_row == "row"){
-      index_out <- which(round(coor_in, digits =6) == round(val_in, digits =6), arr.ind = T)[1,2]
+      index_out <- which(round(coor_in, digits = 9) == round(val_in, digits = 9), arr.ind = T)[1,2]
     }
     
     return(index_out)
@@ -78,22 +69,22 @@ for(i in 1:length(tmin_nc_paths)){
   }
   get_cube_index_row <- function(val_in, coor_in = lon2D, col_or_row = "row"){
     if(col_or_row == "col"){
-      index_out <- which(round(coor_in, digits =6) == round(val_in, digits =6), arr.ind = T)[1,1]
+      index_out <- which(round(coor_in, digits = 9) == round(val_in, digits = 9), arr.ind = T)[1,1]
     }
     
     if(col_or_row == "row"){
-      index_out <- which(round(coor_in, digits =6) == round(val_in, digits =6), arr.ind = T)[1,2]
+      index_out <- which(round(coor_in, digits = 9) == round(val_in, digits = 9), arr.ind = T)[1,2]
     }
     
     return(index_out)
   }
   
-  my_get_cube_col <- function(val_in, coor_in = lat){
+  my_get_cube_col <- function(val_in, coor_in = lat_noise){
     
     get_cube_index_col(val_in = val_in, coor_in = coor_in)
     
   }
-  my_get_cube_row <- function(val_in, coor_in = lat){
+  my_get_cube_row <- function(val_in, coor_in = lat_noise){
     
     get_cube_index_row(val_in = val_in, coor_in = coor_in)
     
@@ -111,8 +102,7 @@ for(i in 1:length(tmin_nc_paths)){
   vapo_cube <- ncvar_get(nc_vapo_sel, start = c(1, 1, 1), count = c(nrow(lon), ncol(lon), length(date_met_sel)), varid = "vp")
   
   #Make cluster for parallel computing
-  n_cores <- 2
-  my_clust <- makeCluster(n_cores)
+  my_clust <- makeCluster(2)
   clusterEvalQ(my_clust, pacman::p_load(zoo, zyp, alptempr, raster))
   clusterExport(my_clust, c("index_col_sel", "index_row_sel"))
   registerDoParallel(my_clust)
@@ -155,6 +145,6 @@ tmea_all <- (tmax_all+tmin_all)/2
 
 save(tmin_all, tmax_all, tmea_all, 
      prcp_all, srad_all, vapo_all, 
-     date_met, 
+     date_met, grid_points_sel,
      file = paste0(daymet_dir, "processed/daymet_meteo_prep.RData"))
 

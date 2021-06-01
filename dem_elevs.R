@@ -142,8 +142,28 @@ dem_dir <- "D:/nrc_user/rottler/dem_us/"
 
 #get_elevs----
 
+#list paths to nc-files
+tmin_nc_paths <- list.files(paste0(daymet_dir, "raw/tmin/"), full.names = T)
+nc_tmin_sel <- ncdf4::nc_open(tmin_nc_paths[1])
+  
+#get longitude, latitude and date
+lon <- ncdf4::ncvar_get(nc_tmin_sel, varid = "lon")
+lat <- ncdf4::ncvar_get(nc_tmin_sel, varid = "lat")
+
+#spatial grid points from lat/lon
+grid_points_cube_84 <-  sp::SpatialPoints(data.frame(lon = c(lon), lat = c(lat)),
+                                          proj4string =  crswgs84)
+  
+#grid points inside watersheds
+inside_sel <- !is.na(sp::over(grid_points_cube_84, as(basin_sel, "SpatialPolygons")))
+  
+grid_points_sel <- grid_points_cube_84[which(inside_sel == T)]
+  
+
+#read dem
 us_dem <- raster(paste0(dem_dir, "processed/us_dem_1arcs.tif"))
 
+#extract elevation with buffer around
 tictoc::tic()
 elevs_sel <- raster::extract(us_dem, grid_points_sel, buffer = 500, na.rm = T, fun = mea_na)
 tictoc::toc()

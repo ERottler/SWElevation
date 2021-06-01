@@ -7,18 +7,6 @@
 
 #get_daymet----
 
-#GRDC watersheds boundaries
-#total data set downloaded in five chunks
-grdc_catch_1 <- rgdal::readOGR(paste0(grdc_catc_dir, "/stationbasins_1.geojson"))
-grdc_catch_2 <- rgdal::readOGR(paste0(grdc_catc_dir, "/stationbasins_2.geojson"))
-grdc_catch_3 <- rgdal::readOGR(paste0(grdc_catc_dir, "/stationbasins_3.geojson"))
-grdc_catch_4 <- rgdal::readOGR(paste0(grdc_catc_dir, "/stationbasins_4.geojson"))
-grdc_catch_5 <- rgdal::readOGR(paste0(grdc_catc_dir, "/stationbasins_5.geojson"))
-
-grdc_catch <- rbind(grdc_catch_1, grdc_catch_2, grdc_catch_3, grdc_catch_4, grdc_catch_5)
-
-basin_sel <- grdc_catch[which(grdc_catch@data$grdc_no == id_sel), ] 
-
 lat1 <- basin_sel@bbox[4]
 lon1 <- basin_sel@bbox[1]
 lat2 <- basin_sel@bbox[2]

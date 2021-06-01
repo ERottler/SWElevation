@@ -121,5 +121,6 @@ for(b in 1:length(block_stas)){
 
 save(swe_all, file = paste0(daymet_dir, "processed/swe_all.RData"))
 
+stopCluster(my_clust)
 
 

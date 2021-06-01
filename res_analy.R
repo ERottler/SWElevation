@@ -264,3 +264,5 @@ save(smea_ann, sslo_ann,
      tmea_ann, tslo_ann,
      pmea_ann, pslo_ann,
      file = paste0(daymet_dir, "processed/res_analy.RData"))
+
+stopCluster(my_clust)

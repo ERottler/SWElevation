@@ -9,6 +9,12 @@
 load(paste0(daymet_dir, "processed/swe_all.RData")) #simulated snow (see swe_simu.R)
 load(paste0(daymet_dir, "processed/res_analy.RData")) #results analysis (see res_analy.R)
 load(paste0(daymet_dir, "processed/elevs_sel.RData")) #elevations from dem (see daymet_get.R)
+load(paste0(daymet_dir, "processed/daymet_meteo_prep.RData")) #daymet meteo data for watershed (see daymet_get.R)
+
+#Cluster for parallel computing
+my_clust <- parallel::makeCluster(n_cores)#Make cluster for parallel computing
+clusterEvalQ(my_clust, pacman::p_load(zoo, zyp, meltimr))
+registerDoParallel(my_clust)
 
 #calc_bands----
 
@@ -23,7 +29,7 @@ elev_bands_all_dif_max[which(elev_bands_all_dif_max < 0)] <- NA
 elev_band_min <- elev_bands_all[which(elev_bands_all_dif_min == max(elev_bands_all_dif_min, na.rm = T))]
 elev_band_max <- elev_bands_all[which(elev_bands_all_dif_max == min(elev_bands_all_dif_max, na.rm = T))]
 
-range(elevs_sel, na.rm = T)
+# range(elevs_sel, na.rm = T)
 my_elev_bands <- seq(elev_band_min, elev_band_max, 50)
 
 f_elev_bands <- function(data_in, elev_bands = my_elev_bands, func_aggr = "mean", 
@@ -75,6 +81,162 @@ tslo_ann_band <- f_elev_bands(data_in = tslo_ann, func_aggr = "mean")
 pmea_ann_band <- f_elev_bands(data_in = pmea_ann, func_aggr = "mean")
 pslo_ann_band <- f_elev_bands(data_in = pslo_ann, func_aggr = "mean")
 
+#scd_maps----
+
+#date swe time series
+date_snow <- as.POSIXct(strptime(date_met, "%Y-%m-%d", tz = "UTC"))
+
+#Select validation period
+sta_date <- as.POSIXct(strptime("1980-10-01", "%Y-%m-%d", tz = "UTC"))
+end_date <- as.POSIXct(strptime("2019-09-30", "%Y-%m-%d", tz = "UTC"))
+date_vali <- as.POSIXct(as.Date(seq(sta_date, end_date, by = "day")), tz = "UTC")
+
+#clip validation period from simulations
+snow_simu_sel <- which(date_snow %in% date_vali)
+swe_all_vali <- swe_all[snow_simu_sel, ]
+tem_all_vali <- tmea_all[snow_simu_sel, ]
+prc_all_vali <- prcp_all[snow_simu_sel, ]
+
+#calculate sum days with snow for validation period
+f_snow2sc <- function(snow_in, snow_thresh = 0.02){
+  
+  snow_in[which(snow_in >= snow_thresh)] <- 1
+  snow_in[which(snow_in <  snow_thresh)] <- 0
+  snow_in[which(is.na(snow_in))] <- NA
+  
+  snow_days_sum <- sum(snow_in, na.rm = T)
+  
+  return(snow_days_sum)
+  
+}
+
+scd_simu <- apply(swe_all_vali, 2, f_snow2sc) / (nrow(swe_all_vali)/365)
+tem_simu <- apply(tem_all_vali, 2, mea_na)
+prc_simu <- apply(prc_all_vali, 2, mea_na) * 365
+swe_simu <- apply(swe_all_vali, 2, mea_na) * 100 # [mm]
+
+val2col <- function(val_in, dat_ref, do_log = F, do_bicol = T, col_na = "white"){
+  
+  if(do_log){
+    
+    val_in <- log(val_in)
+    dat_ref <- log(dat_ref)
+    
+  }
+  
+  if(is.na(val_in)){#set NAs to mean to keep script running; later back to NA
+    val_in <- mea_na(dat_ref)
+    set2NA_1 <- T
+  }else{
+    set2NA_1 <- F
+  }
+  
+  if(do_bicol){
+    
+    col_ind <- round((abs(val_in) / max_na(abs(dat_ref))) * 100)
+    
+    if(val_in < 0){
+      my_col  <- colorRampPalette(c("grey80", "lemonchiffon2", "lightgoldenrod2", "gold3", "goldenrod3", "orangered4", "darkred"))(100)
+    }else{
+      my_col  <- colorRampPalette(c("grey80", "lightcyan3", viridis::viridis(9, direction = 1)[c(4,3,2,1,1)]))(100)
+    }
+    
+  }else{
+    col_ind <- round((val_in-min_na(dat_ref)) / (max_na(dat_ref)-min_na(dat_ref)) * 200)  
+    my_col <- c(colorRampPalette(c(viridis::viridis(20, direction = -1)))(200))
+  }
+  
+  
+  if(is.na(col_ind)){
+    set2NA_2 <- T
+    col_ind <- 1 #set to one to keep script running; later set to NA color
+  }else{
+    set2NA_2 = F
+  }
+  
+  if(col_ind == 0){#for minimum and very small values
+    
+    col_ind <- 1
+    
+  }
+  
+  col_out <- my_col[col_ind]
+  
+  if(length(col_out) < 1){
+    
+    col_out <- col_na
+    
+  }
+  
+  if(set2NA_1 | set2NA_2){
+    
+    col_out <- col_na
+    
+  }
+  
+  return(col_out)
+  
+}
+
+cols_scd_simu <- foreach(i = 1:length(scd_simu), .combine = 'cbind') %dopar% {
+  
+  val2col(val_in = scd_simu[i], 
+          dat_ref = scd_simu,
+          do_log = F,
+          do_bicol = F)
+  
+}
+cols_tem_simu <- foreach(i = 1:length(tem_simu), .combine = 'cbind') %dopar% {
+  
+  val2col(val_in = tem_simu[i], 
+          dat_ref = tem_simu,
+          do_log = F,
+          do_bicol = F)
+  
+}
+cols_prc_simu <- foreach(i = 1:length(prc_simu), .combine = 'cbind') %dopar% {
+  
+  val2col(val_in = prc_simu[i], 
+          dat_ref = prc_simu,
+          do_log = F,
+          do_bicol = F)
+  
+}
+cols_ele_simu <- foreach(i = 1:length(elevs_sel), .combine = 'cbind') %dopar% {
+  
+  val2col(val_in = elevs_sel[i], 
+          dat_ref = elevs_sel,
+          do_log = F,
+          do_bicol = F)
+  
+}
+cols_swe_simu <- foreach(i = 1:length(swe_simu), .combine = 'cbind') %dopar% {
+  
+  val2col(val_in = swe_simu[i], 
+          dat_ref = swe_simu,
+          do_log = F,
+          do_bicol = F)
+  
+}
+
+cols_sel <- cols_scd_simu
+data_sel <- scd_simu
+
+layout(matrix(c(rep(1, 7), 2),
+              1, 8), widths=c(), heights=c())
+
+par(mar = c(2.0, 0.5, 0.5, 0.5))
+plot(basin_sel)
+points(grid_points_sel@coords[, 1], grid_points_sel@coords[, 2], pch = 19, col = cols_sel, cex = 2.0)
+plot(basin_sel, add = T)
+
+par(mar = c(2.0, 0.2, 2.5, 3.5))
+my_col <- c(colorRampPalette(c(viridis::viridis(20, direction = -1)))(200))
+my_bre <- seq(min_na(data_sel), max_na(data_sel), length.out = length(my_col)+1)
+alptempr::image_scale(as.matrix(data_sel), col = my_col, breaks = my_bre, horiz=F, ylab="", xlab="", yaxt="n", axes=F)
+axis(4, mgp=c(3, 0.45, 0), tck = -0.1, cex.axis = 1.5)
+box()
+
 
 #save_data----
 
@@ -84,10 +246,13 @@ save(my_elev_bands,
      vdif_ann_band, vdis_ann_band,
      tmea_ann_band, tslo_ann_band,
      pmea_ann_band, pslo_ann_band,
+     scd_simu, prc_simu, tem_simu, swe_simu,
+     cols_scd_simu, cols_prc_simu, cols_tem_simu, cols_ele_simu, cols_swe_simu,
+     grid_points_sel, basin_sel,
      file = paste0(daymet_dir, "processed/res_dashb.RData"))
 
+stopCluster(my_clust)
 
-# 
 # #plot_snow----
 # 
 # plot_snow <- smea_ann_band 
