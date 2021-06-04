@@ -240,7 +240,7 @@ shinyServer(function(input, output) {
         axis(2, mgp=c(3, 0.45, 0), tck = -0.009, cex.axis = 1.8, col = "white", col.axis = "white")
         mtext(expression(paste("Elevation [m]")), side = 2, line = 2.2, cex = 1.4, col = "white")
         mtext(stat_name_max35, line = 0.2, side = 3, cex = 1.5, adj = 0, col = "white")
-        mtext("[mm]", line = 0.2, side = 3, cex = 1.2, adj = 1, col = "white")
+        mtext("[m]", line = 0.2, side = 3, cex = 1.2, adj = 1, col = "white")
         graphics::box(col = "white")
         
         
@@ -282,7 +282,7 @@ shinyServer(function(input, output) {
         axis(2, mgp=c(3, 0.45, 0), tck = -0.009, cex.axis = 1.8, col = "white", col.axis = "white")
         mtext(expression(paste("Elevation [m]")), side = 2, line = 2.2, cex = 1.4, col = "white")
         mtext(stat_name_max35, line = 0.2, side = 3, cex = 1.5, adj = 0, col = "white")
-        mtext("[mm]", line = 0.2, side = 3, cex = 1.2, adj = 1, col = "white")
+        mtext("[m/dec]", line = 0.2, side = 3, cex = 1.2, adj = 1, col = "white")
         graphics::box(col = "white")
         
         
@@ -323,7 +323,7 @@ shinyServer(function(input, output) {
         axis(2, mgp=c(3, 0.45, 0), tck = -0.009, cex.axis = 1.8, col = "white", col.axis = "white")
         mtext(expression(paste("Elevation [m]")), side = 2, line = 2.2, cex = 1.4, col = "white")
         mtext(stat_name_max35, line = 0.2, side = 3, cex = 1.5, adj = 0, col = "white")
-        mtext("[mm]", line = 0.2, side = 3, cex = 1.2, adj = 1, col = "white")
+        mtext("[m]", line = 0.2, side = 3, cex = 1.2, adj = 1, col = "white")
         graphics::box(col = "white")
         
         
@@ -365,7 +365,7 @@ shinyServer(function(input, output) {
         axis(2, mgp=c(3, 0.45, 0), tck = -0.009, cex.axis = 1.8, col = "white", col.axis = "white")
         mtext(expression(paste("Elevation [m]")), side = 2, line = 2.2, cex = 1.4, col = "white")
         mtext(stat_name_max35, line = 0.2, side = 3, cex = 1.5, adj = 0, col = "white")
-        mtext("[mm]", line = 0.2, side = 3, cex = 1.2, adj = 1, col = "white")
+        mtext("[m/dec]", line = 0.2, side = 3, cex = 1.2, adj = 1, col = "white")
         graphics::box(col = "white")
         
         
@@ -406,7 +406,7 @@ shinyServer(function(input, output) {
         axis(2, mgp=c(3, 0.45, 0), tck = -0.009, cex.axis = 1.8, col = "white", col.axis = "white")
         mtext(expression(paste("Elevation [m]")), side = 2, line = 2.2, cex = 1.4, col = "white")
         mtext(stat_name_max35, line = 0.2, side = 3, cex = 1.5, adj = 0, col = "white")
-        mtext("[mm]", line = 0.2, side = 3, cex = 1.2, adj = 1, col = "white")
+        mtext("[m/day]", line = 0.2, side = 3, cex = 1.2, adj = 1, col = "white")
         graphics::box(col = "white")
         
         
@@ -448,7 +448,7 @@ shinyServer(function(input, output) {
         axis(2, mgp=c(3, 0.45, 0), tck = -0.009, cex.axis = 1.8, col = "white", col.axis = "white")
         mtext(expression(paste("Elevation [m]")), side = 2, line = 2.2, cex = 1.4, col = "white")
         mtext(stat_name_max35, line = 0.2, side = 3, cex = 1.5, adj = 0, col = "white")
-        mtext("[mm]", line = 0.2, side = 3, cex = 1.2, adj = 1, col = "white")
+        mtext("[(m/day) / dec]", line = 0.2, side = 3, cex = 1.2, adj = 1, col = "white")
         graphics::box(col = "white")
         
         
@@ -583,6 +583,7 @@ shinyServer(function(input, output) {
         
         
       }
+      
       if(input$plot_type == "pslo_ann"){
         
         x_axis_lab <- c(16,46,74,105,135,166,196,227,258,288,319,349)
@@ -620,6 +621,123 @@ shinyServer(function(input, output) {
         image_scale(as.matrix(pslo_ann_band), col = my_col, breaks = my_bre, horiz=F, ylab="", xlab="", yaxt="n", axes=F)
         axis(4, mgp=c(3, 0.85, 0), tck = -0.12, col.axis = "white", cex.axis = 1.8)
         graphics::box(col = "white")
+        
+      }
+      
+      if(input$plot_type == "map_scd"){
+        
+        col_background <- rgb(45, 45, 45, maxColorValue = 255)
+        
+        layout(matrix(c(rep(1, 7), 2),
+                      1, 8), widths=c(), heights=c())
+
+        par(mar = c(2.0, 0.5, 3.5, 0.5))
+        plot(basin_sel, col = alpha("white", alpha = 0), axes = F, ylab = "", xlab = "")
+        points(grid_points_sel@coords[, 1], grid_points_sel@coords[, 2], pch = 19, col = cols_scd_simu, cex = 1.8)
+        mtext("Annual average snow cover duration (10/1980 - 09/2019)", 
+              side = 3, cex = 1.2, col = "white", line = 0.4, adj = 0.0)
+
+        par(mar = c(2.0, 0.2, 2.5, 4.5))
+        my_col <- c(colorRampPalette(c(viridis::viridis(20, direction = -1)))(200))
+        my_bre <- seq(min_na(scd_simu), max_na(scd_simu), length.out = length(my_col)+1)
+        alptempr::image_scale(as.matrix(scd_simu), col = my_col, breaks = my_bre, horiz=F, ylab="", xlab="", yaxt="n", axes=F)
+        axis(4, mgp=c(3, 0.75, 0), tck = -0.08, cex.axis = 1.7, col.axis = "white", col.ticks = "white")
+        mtext("[day]", side = 3, cex = 1.0, col = "white", line = 0.5)
+        box(col = "white", lwd = 0.8)
+        
+        
+        
+      }
+      
+      if(input$plot_type == "map_tem"){
+        
+        col_background <- rgb(45, 45, 45, maxColorValue = 255)
+        
+        layout(matrix(c(rep(1, 7), 2),
+                      1, 8), widths=c(), heights=c())
+        
+        par(mar = c(2.0, 0.5, 3.5, 0.5))
+        plot(basin_sel, col = alpha("white", alpha = 0), axes = F, ylab = "", xlab = "")
+        points(grid_points_sel@coords[, 1], grid_points_sel@coords[, 2], pch = 19, col = cols_tem_simu, cex = 1.8)
+        mtext("Annual average temperature (10/1980 - 09/2019)", 
+              side = 3, cex = 1.2, col = "white", line = 0.4, adj = 0.0)
+        
+        par(mar = c(2.0, 0.2, 2.5, 4.5))
+        my_col <- c(colorRampPalette(c(viridis::viridis(20, direction = -1)))(200))
+        my_bre <- seq(min_na(tem_simu), max_na(tem_simu), length.out = length(my_col)+1)
+        alptempr::image_scale(as.matrix(scd_simu), col = my_col, breaks = my_bre, horiz=F, ylab="", xlab="", yaxt="n", axes=F)
+        axis(4, mgp=c(3, 0.75, 0), tck = -0.08, cex.axis = 1.7, col.axis = "white", col.ticks = "white")
+        mtext("[°C]", side = 3, cex = 1.0, col = "white", line = 0.5)
+        box(col = "white", lwd = 0.8)
+        
+      }
+      
+      if(input$plot_type == "map_prc"){
+        
+        col_background <- rgb(45, 45, 45, maxColorValue = 255)
+        
+        layout(matrix(c(rep(1, 7), 2),
+                      1, 8), widths=c(), heights=c())
+        
+        par(mar = c(2.0, 0.5, 3.5, 0.5))
+        plot(basin_sel, col = alpha("white", alpha = 0), axes = F, ylab = "", xlab = "")
+        points(grid_points_sel@coords[, 1], grid_points_sel@coords[, 2], pch = 19, col = cols_prc_simu, cex = 1.8)
+        mtext("Average annual precipitation (10/1980 - 09/2019)", 
+              side = 3, cex = 1.2, col = "white", line = 0.4, adj = 0.0)
+        
+        par(mar = c(2.0, 0.2, 2.5, 4.5))
+        my_col <- c(colorRampPalette(c(viridis::viridis(20, direction = -1)))(200))
+        my_bre <- seq(min_na(prc_simu), max_na(prc_simu), length.out = length(my_col)+1)
+        alptempr::image_scale(as.matrix(scd_simu), col = my_col, breaks = my_bre, horiz=F, ylab="", xlab="", yaxt="n", axes=F)
+        axis(4, mgp=c(3, 0.75, 0), tck = -0.08, cex.axis = 1.7, col.axis = "white", col.ticks = "white")
+        mtext("[mm]", side = 3, cex = 1.0, col = "white", line = 0.5)
+        box(col = "white", lwd = 0.8)
+        
+      }
+      
+      if(input$plot_type == "map_swe"){
+        
+        col_background <- rgb(45, 45, 45, maxColorValue = 255)
+        
+        layout(matrix(c(rep(1, 7), 2),
+                      1, 8), widths=c(), heights=c())
+        
+        par(mar = c(2.0, 0.5, 3.5, 0.5))
+        plot(basin_sel, col = alpha("white", alpha = 0), axes = F, ylab = "", xlab = "")
+        points(grid_points_sel@coords[, 1], grid_points_sel@coords[, 2], pch = 19, col = cols_swe_simu, cex = 1.8)
+        mtext("Average daily SWE depth (10/1980 - 09/2019)", 
+              side = 3, cex = 1.2, col = "white", line = 0.4, adj = 0.0)
+        
+        par(mar = c(2.0, 0.2, 2.5, 4.5))
+        my_col <- c(colorRampPalette(c(viridis::viridis(20, direction = -1)))(200))
+        my_bre <- seq(min_na(swe_simu), max_na(swe_simu), length.out = length(my_col)+1)
+        alptempr::image_scale(as.matrix(scd_simu), col = my_col, breaks = my_bre, horiz=F, ylab="", xlab="", yaxt="n", axes=F)
+        axis(4, mgp=c(3, 0.75, 0), tck = -0.08, cex.axis = 1.7, col.axis = "white", col.ticks = "white")
+        mtext("[mm]", side = 3, cex = 1.0, col = "white", line = 0.5)
+        box(col = "white", lwd = 0.8)
+        
+      }
+      
+      if(input$plot_type == "map_ele"){
+        
+        col_background <- rgb(45, 45, 45, maxColorValue = 255)
+        
+        layout(matrix(c(rep(1, 7), 2),
+                      1, 8), widths=c(), heights=c())
+        
+        par(mar = c(2.0, 0.5, 3.5, 0.5))
+        plot(basin_sel, col = alpha("white", alpha = 0), axes = F, ylab = "", xlab = "")
+        points(grid_points_sel@coords[, 1], grid_points_sel@coords[, 2], pch = 19, col = cols_ele_simu, cex = 1.8)
+        mtext("Elevation of grid cells", 
+              side = 3, cex = 1.2, col = "white", line = 0.4, adj = 0.0)
+        
+        par(mar = c(2.0, 0.2, 2.5, 4.5))
+        my_col <- c(colorRampPalette(c(viridis::viridis(20, direction = -1)))(200))
+        my_bre <- seq(min_na(elevs_sel), max_na(elevs_sel), length.out = length(my_col)+1)
+        alptempr::image_scale(as.matrix(scd_simu), col = my_col, breaks = my_bre, horiz=F, ylab="", xlab="", yaxt="n", axes=F)
+        axis(4, mgp=c(3, 0.75, 0), tck = -0.08, cex.axis = 1.7, col.axis = "white", col.ticks = "white")
+        mtext("[m]", side = 3, cex = 1.0, col = "white", line = 0.5)
+        box(col = "white", lwd = 0.8)
         
       }
       

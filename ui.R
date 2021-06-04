@@ -89,19 +89,22 @@ navbarPage("Watershed Investigator", id="nav", theme = shinytheme("slate"), sele
                                       h3("Watershed Investigator"),
                                       
                                       selectInput("plot_type", "Select plot type", c(
-                                        "Elevation distribution" = "elevdist",
-                                        "SWE - height - average" = "smea_ann",
-                                        "SWE - height - trend" = "sslo_ann",
-                                        "SWE - sum - average" = "vmea_ann",
-                                        "SWE - sum - trend" = "vslo_ann",
-                                        "SWE - daily change - average" = "vdif_ann",
-                                        "SWE - daily change - trend" = "vdis_ann",
-                                        "Temperature - average" = "tmea_ann",
-                                        "Temperature - trend" = "tslo_ann",
-                                        "Precipitation - average" = "pmea_ann",
-                                        "Precipitation - trend" = "pslo_ann",
-                                        "Discharge obs. - Raster graph" = "dis_obs_raster"
-                                        
+                                        "Elevation - Map" = "map_ele",
+                                        "Elevation - Distribution" = "elevdist",
+                                        "Temperature - Annual average - Map" = "map_tem",
+                                        "Temperature - Average - Elevation bands" = "tmea_ann",
+                                        "Temperature - Trend - Elevation bands" = "tslo_ann",
+                                        "Precipitaiton - Annual average - Map" = "map_prc",
+                                        "Precipitaiton - Average - Elevation bands" = "pmea_ann",
+                                        "Precipitaiton - Trend - Elevation bands" = "pslo_ann",
+                                        "Snow cover duration - Annual average - Map" = "map_scd",
+                                        "Sde - mea - Map" = "map_swe",
+                                        "Sde - mea - Band" = "smea_ann",
+                                        "Sde - slo - Band" = "sslo_ann",
+                                        "Ssu - mea - Band" = "vmea_ann",
+                                        "Ssu - slo - Band" = "vslo_ann",
+                                        "Sdc - mea - Band" = "vdif_ann",
+                                        "Sdc - slo - Band" = "vdis_ann"
                                       )),
                                       plotOutput("elev_plot", width = "100%"),
                                       
